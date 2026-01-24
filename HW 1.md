@@ -49,32 +49,20 @@ volumes:
 - postgres:5432
 - db:5432
 
-If multiple answers are correct, select any 
-
-
-## Prepare the Data
-
-Download the green taxi trips data for November 2025:
-
-```bash
-wget https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet
-```
-
-You will also need the dataset with zones:
-
-```bash
-wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv
-```
+If multiple answers are correct, select any
 
 ## Question 3. Counting short trips
 
 For the trips in November 2025 (lpep_pickup_datetime between '2025-11-01' and '2025-12-01', exclusive of the upper bound), how many trips had a `trip_distance` of less than or equal to 1 mile?
 
-- 7,853
-- 8,007
-- 8,254
-- 8,421
-
+```SQL
+SELECT COUNT(*)
+FROM 'green_tripdata_2025-11.parquet'
+WHERE lpep_pickup_datetime >= TIMESTAMP '2025-11-01'
+  AND lpep_pickup_datetime <  TIMESTAMP '2025-12-01'
+  AND trip_distance <= 1
+```
+>- 8,007
 
 ## Question 4. Longest trip for each day
 
@@ -82,11 +70,15 @@ Which was the pick up day with the longest trip distance? Only consider trips wi
 
 Use the pick up time for your calculations.
 
-- 2025-11-14
-- 2025-11-20
-- 2025-11-23
-- 2025-11-25
-
+```SQL
+SELECT DATE(lpep_pickup_datetime), MAX(trip_distance)
+FROM 'green_tripdata_2025-11.parquet'
+WHERE trip_distance < 100 
+GROUP BY DATE(lpep_pickup_datetime)	
+ORDER BY MAX(trip_distance) DESC
+LIMIT 1
+```
+>- 2025-11-14
 
 ## Question 5. Biggest pickup zone
 

@@ -42,14 +42,7 @@ volumes:
   vol-pgadmin_data:
     name: vol-pgadmin_data
 ```
-
-- postgres:5433
-- localhost:5432
-- db:5433
-- postgres:5432
-- db:5432
-
-If multiple answers are correct, select any
+>- postgres:5432
 
 ## Question 3. Counting short trips
 
@@ -84,11 +77,18 @@ LIMIT 1
 
 Which was the pickup zone with the largest `total_amount` (sum of all trips) on November 18th, 2025?
 
-- East Harlem North
-- East Harlem South
-- Morningside Heights
-- Forest Hills
+```SQL
+SELECT z.Zone, SUM(t.total_amount) AS total_amount
+FROM 'green_tripdata_2025-11.parquet.parquet' AS t
+LEFT JOIN 'taxi_zone_lookup.csv' AS z
+  ON t.PULocationID = z.LocationID
+WHERE DATE(t.lpep_pickup_datetime) = DATE '2025-11-18'
+GROUP BY z.Zone
+ORDER BY total_amount DESC
+LIMIT 1;
+```
 
+>- East Harlem North
 
 ## Question 6. Largest tip
 
@@ -96,22 +96,21 @@ For the passengers picked up in the zone named "East Harlem North" in November 2
 
 Note: it's `tip` , not `trip`. We need the name of the zone, not the ID.
 
-- JFK Airport
-- Yorkville West
-- East Harlem North
-- LaGuardia Airport
-
-
-## Terraform
-
-In this section homework we'll prepare the environment by creating resources in GCP with Terraform.
-
-In your VM on GCP/Laptop/GitHub Codespace install Terraform.
-Copy the files from the course repo
-[here](../../../01-docker-terraform/terraform/terraform) to your VM/Laptop/GitHub Codespace.
-
-Modify the files as necessary to create a GCP Bucket and Big Query Dataset.
-
+```SQL
+SELECT dz.Zone AS dropoff_zone, MAX(t.tip_amount) AS max_tip
+FROM 'green_tripdata_2025-11.parquet.parquet' AS t
+LEFT JOIN 'taxi_zone_lookup.csv' AS dz
+  ON t.DOLocationID = dz.LocationID
+LEFT JOIN 'taxi_zone_lookup.csv' AS pz
+  ON t.PULocationID = pz.LocationID
+WHERE pz.Zone = 'East Harlem North'
+  AND DATE(t.lpep_pickup_datetime) >= DATE '2025-11-01'
+  AND DATE(t.lpep_pickup_datetime) < DATE '2025-12-01'
+GROUP BY dz.Zone
+ORDER BY max_tip DESC
+LIMIT 1;
+```
+>- Yorkville West
 
 ## Question 7. Terraform Workflow
 
@@ -120,10 +119,4 @@ Which of the following sequences, respectively, describes the workflow for:
 2. Generating proposed changes and auto-executing the plan
 3. Remove all resources managed by terraform`
 
-Answers:
-- terraform import, terraform apply -y, terraform destroy
-- teraform init, terraform plan -auto-apply, terraform rm
-- terraform init, terraform run -auto-approve, terraform destroy
-- terraform init, terraform apply -auto-approve, terraform destroy
-- terraform import, terraform apply -y, terraform rm
-
+>- terraform init, terraform apply -auto-approve, terraform destroy

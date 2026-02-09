@@ -1,6 +1,11 @@
 ## Question 1. Counting records
 
 What is count of records for the 2024 Yellow Taxi Data?
+
+```SQL
+SELECT COUNT(*)
+FROM 
+```
 - 65,623
 - 840,402
 - 20,332,093
@@ -23,16 +28,19 @@ What is the **estimated amount** of data that will be read when this query is ex
 Write a query to retrieve the PULocationID from the table (not the external table) in BigQuery. Now write a query to retrieve the PULocationID and DOLocationID on the same table.
 
 Why are the estimated number of Bytes different?
-- BigQuery is a columnar database, and it only scans the specific columns requested in the query. Querying two columns (PULocationID, DOLocationID) requires 
+
+>- BigQuery is a columnar database, and it only scans the specific columns requested in the query. Querying two columns (PULocationID, DOLocationID) requires 
 reading more data than querying one column (PULocationID), leading to a higher estimated number of bytes processed.
-- BigQuery duplicates data across multiple storage partitions, so selecting two columns instead of one requires scanning the table twice, 
-doubling the estimated bytes processed.
-- BigQuery automatically caches the first queried column, so adding a second column increases processing time but does not affect the estimated bytes scanned.
-- When selecting multiple columns, BigQuery performs an implicit join operation between them, increasing the estimated bytes processed
 
 ## Question 4. Counting zero fare trips
 
 How many records have a fare_amount of 0?
+
+```SQL
+SELECT COUNT(*)
+FROM 
+WHERE fare_amount = 0;
+```
 - 128,210
 - 546,578
 - 20,188,016
@@ -44,40 +52,38 @@ What is the best strategy to make an optimized table in Big Query if your query 
 
 >- Partition by tpep_dropoff_datetime and Cluster on VendorID
 
-
 ## Question 6. Partition benefits
 
 Write a query to retrieve the distinct VendorIDs between tpep_dropoff_datetime
 2024-03-01 and 2024-03-15 (inclusive)
 
+```SQL
+SELECT DISTINCT(VendorID)
+FROM
+WHERE 2024-03-01 <= tpep_dropoff_datetime <= 2024-03-15
+```
 
 Use the materialized table you created earlier in your from clause and note the estimated bytes. Now change the table in the from clause to the partitioned table you created for question 5 and note the estimated bytes processed. What are these values? 
 
+```SQL
+SELECT DISTINCT(VendorID)
+FROM
+WHERE DATE(tpep_dropoff_datetime) BETWEEN 2024-03-01 AND 2024-03-15;
+```
 
 Choose the answer which most closely matches.
  
-
-- 12.47 MB for non-partitioned table and 326.42 MB for the partitioned table
-- 310.24 MB for non-partitioned table and 26.84 MB for the partitioned table
-- 5.87 MB for non-partitioned table and 0 MB for the partitioned table
-- 310.31 MB for non-partitioned table and 285.64 MB for the partitioned table
-
+>- 310.24 MB for non-partitioned table and 26.84 MB for the partitioned table
 
 ## Question 7. External table storage
 
 Where is the data stored in the External Table you created?
 
-- Big Query
-- Container Registry
-- GCP Bucket
-- Big Table
+>- GCP Bucket
 
 ## Question 8. Clustering best practices
 
 It is best practice in Big Query to always cluster your data:
->- True
 
-
-## Question 9. Understanding table scans
-
-No Points: Write a `SELECT count(*)` query FROM the materialized table you created. How many bytes does it estimate will be read? Why?
+>- False
+>- Clustering has an additional cost, it's advisable to perform only when required

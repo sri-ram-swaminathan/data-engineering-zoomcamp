@@ -14,7 +14,7 @@ models/
 If you run `dbt run --select int_trips_unioned`, what models will be built?
 
 >- `int_trips_unioned` only
-
+>- We need to add a + before to run any models that it depends on and add a + after to run any models that depend on it
 
 ### Question 2. dbt Tests
 
@@ -48,7 +48,7 @@ What is the count of records in the `fct_monthly_zone_revenue` model?
 SELECT 
 COUNT(*) as total_records
 FROM 
-`homework448710.-487603.nytaxi_dbt_prod.fct_monthly_zone_revenue`;
+`homework4-48710.-487603.nytaxi_dbt_prod.fct_monthly_zone_revenue`;
 ```
 
 >- 12,184
@@ -105,9 +105,47 @@ Using the `fct_monthly_zone_revenue` table, what is the **total number of trips*
 Create a staging model for the **For-Hire Vehicle (FHV)** trip data for 2019.
 
 1. Load the [FHV trip data for 2019](https://github.com/DataTalksClub/nyc-tlc-data/releases/tag/fhv) into your data warehouse
-2. Create a staging model `stg_fhv_tripdata` with these requirements:
+
+I first modified the `ingest.py` script from last week to include the FHV trip data into my BigQuery dataset
+
+Then, I need to let dbt know to load this data, this is done by modifying the `sources.yml` file to simply include this 
+
+```yml
+version: 2
+
+sources:
+  - name: raw_data
+    description: "Raw data sources for NYC taxi rides"
+    database: module-4-dbt # Project ID
+    schema: nytaxi # Dataset name
+    tables:
+      - name: yellow_tripdata
+        description: Raw yellow taxi trip data
+      - name: green_tripdata
+        description: Raw green taxi trip data
+      - name: fhv_tripdata
+        description: Raw fhv taxi trip data
+```
+
+3. Create a staging model `stg_fhv_tripdata` with these requirements:
    - Filter out records where `dispatching_base_num IS NULL`
    - Rename fields to match your project's naming conventions (e.g., `PUlocationID` → `pickup_location_id`)
+
+Then I created the following file in the staging folder of the project 
+
+```yml
+SELECT dispatching_base_num,
+    pickup_datetime,
+    dropOff_datetime AS dropoff_datetime, 
+    PUlocationID AS pickup_location_id, 
+    DOlocationID AS dropoff_location_id,
+    SR_Flag AS sr_flag,
+    Affiliated_base_number AS affiliated_base_number
+FROM {{ source("raw_data", "fhv_tripdata")}}
+WHERE dispatching_base_num IS NOT NULL
+```
+
+I then simply run this file and then the following command
 
 What is the count of records in `stg_fhv_tripdata`?
 

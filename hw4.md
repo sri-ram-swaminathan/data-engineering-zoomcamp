@@ -45,15 +45,14 @@ After running your dbt project, query the `fct_monthly_zone_revenue` model.
 What is the count of records in the `fct_monthly_zone_revenue` model?
 
 ```SQL
-SELECT COUNT(*) 
-FROM
-AS count_of_records;
+SELECT 
+COUNT(*) as total_records
+FROM 
+`homework448710.-487603.nytaxi_dbt_prod.fct_monthly_zone_revenue`;
 ```
 
-- 12,998
-- 14,120
-- 12,184
-- 15,421
+>- 12,184
+
 
 ---
 
@@ -64,34 +63,40 @@ Using the `fct_monthly_zone_revenue` table, find the pickup zone with the **high
 Which zone had the highest revenue?
 
 ```SQL
-SELECT pickip_zone,  revenue_monthly_total_amount
-FROM green_tripdata
-WHERE YEAR() = 2020
-ORDER BY revenue_monthly_total_amount DESC
+SELECT
+    pickup_zone, 
+    SUM(revenue_monthly_total_amount) AS total_revenue
+FROM 
+    `homework4-487510.nytaxi_dbt_prod.fct_monthly_zone_revenue`
+WHERE 
+    service_type = 'Green' 
+    AND EXTRACT(YEAR FROM revenue_month) = 2020
+GROUP BY 
+    pickup_zone
+ORDER BY 
+    total_revenue DESC
 LIMIT 1;
 ```
 
-- East Harlem North
-- Morningside Heights
-- East Harlem South
-- Washington Heights South
+>- East Harlem North
 
 ---
 
 ### Question 5. Green Taxi Trip Counts (October 2019)
 
 ```SQL
-SELECT COUNT(*)
-FROM green_tripdata
+SELECT 
+    SUM(total_monthly_trips) AS total_trip
+FROM 
+    `homework4-487510.nytaxi_dbt_prod.fct_monthly_zone_revenue`
 WHERE 
+    service_type = 'Green' 
+    AND revenue_month = '2019-10-01';
 ```
 
 Using the `fct_monthly_zone_revenue` table, what is the **total number of trips** (`total_monthly_trips`) for Green taxis in October 2019?
 
-- 500,234
-- 350,891
-- 384,624
-- 421,509
+>- 384,624
 
 ---
 
@@ -107,13 +112,13 @@ Create a staging model for the **For-Hire Vehicle (FHV)** trip data for 2019.
 What is the count of records in `stg_fhv_tripdata`?
 
 ```SQL
-SELECT COUNT(*)
+SELECT 
+    COUNT(*) 
 FROM 
+    `homework4-487510.nytaxi_dbt_prod.stg_fhv_tripdata` LIMIT 10
 ```
-- 42,084,899
-- 43,244,693
-- 22,998,722
-- 44,112,187
+>- 43,244,693
+
 
 
 
